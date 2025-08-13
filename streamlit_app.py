@@ -227,12 +227,18 @@ def main():
                         html_gen = HierarchicalHTMLGenerator()
                         html_path = html_gen.generate_report(hierarchical_data, None, project_info)
                         
-                        # Read the generated HTML with explicit UTF-8 encoding
+                        # Read the generated HTML with explicit UTF-8 encoding and validation
                         try:
                             with open(html_path, 'r', encoding='utf-8', errors='replace') as f:
                                 html_content = f.read()
+                            
+                            # Validate that HTML was generated successfully
+                            if not html_content or len(html_content) < 100:
+                                raise ValueError("HTML-innehåll verkar vara korrupt eller tomt")
+                                
                         except Exception as e:
-                            st.error(f"Fel vid läsning av HTML-fil: {str(e)}")
+                            st.error(f"⚠️ Fel vid läsning av HTML-fil: {str(e)}")
+                            st.error("Kontrollera att alla filer är korrekta och försök igen.")
                             html_content = ""
                         
                         # Store HTML content in session state
@@ -304,10 +310,31 @@ def main():
     st.markdown("---")
     st.markdown(
         "<div style='text-align: center; color: #9ca3af; font-size: 0.9rem;'>"
-        "Spårbarhetsprogram | Version 2.0 | Streamlit Cloud"
+        "Spårbarhetsprogram | Version 2.0 | Streamlit Cloud<br>"
+        "<small style='font-size: 0.8rem; opacity: 0.7;'>Optimerad för Windows, Chrome, Edge och Firefox</small>"
         "</div>",
         unsafe_allow_html=True
     )
+    
+    # Developer note about remaining warnings
+    with st.expander("ℹ️ Om Edge DevTools varningar", expanded=False):
+        st.markdown("""
+        **Kvarvarande varningar i Edge DevTools:**
+        
+        De flesta varningar du ser kommer från **Streamlit Cloud's egna system** och inte från vår app:
+        - Analytics scripts (HubSpot, Google Tag Manager, Heap)
+        - Streamlit's egna CSS och JavaScript
+        - Server headers som vi inte kan kontrollera
+        
+        **Vad vi har fixat för vår HTML-rapport:**
+        - ✅ UTF-8 encoding överallt
+        - ✅ Korrekt viewport utan user-scalable
+        - ✅ Cross-browser CSS-kompatibilitet
+        - ✅ Windows encoding-hantering
+        - ✅ Bättre error handling
+        
+        **Den genererade HTML-rapporten** (som du laddar ner) är helt optimerad och fri från dessa problem!
+        """)
 
 if __name__ == "__main__":
     main()

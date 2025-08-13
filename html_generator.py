@@ -78,11 +78,27 @@ class HierarchicalHTMLGenerator:
     <meta name="robots" content="noindex, nofollow">
     <title>Spårbarhetsrapport{' - ' + project_number if project_number else ''}</title>
     <style>
-        /* Security and performance optimizations */
+        /* Cross-browser compatibility and performance optimizations */
+        html {{
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }}
+        
         * {{
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }}
+        
+        /* Fix for min-height stretch compatibility */
+        .container {{
+            min-height: -webkit-fill-available;
+            min-height: stretch;
+            min-height: 100vh;
         }}
         
         {dynamic_styles}

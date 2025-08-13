@@ -1,12 +1,19 @@
+# -*- coding: utf-8 -*-
 import streamlit as st
 import pandas as pd
 from pathlib import Path
 import tempfile
 import os
+import sys
 from datetime import datetime
 from traceability_parser import TraceabilityParser
 from traceability_model import TraceabilityDatabase
 from html_generator import HierarchicalHTMLGenerator
+
+# Ensure UTF-8 encoding
+if sys.platform == 'win32':
+    import locale
+    locale.setlocale(locale.LC_ALL, 'sv_SE.UTF-8' if 'sv_SE' in locale.locale_alias else 'en_US.UTF-8')
 
 # Page config
 st.set_page_config(
@@ -155,7 +162,12 @@ def main():
                 for uploaded_file in uploaded_files:
                     # Create temp file with proper extension
                     suffix = Path(uploaded_file.name).suffix
-                    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp_file:
+                    with tempfile.NamedTemporaryFile(
+                        suffix=suffix, 
+                        delete=False,
+                        mode='wb',
+                        prefix='tracer_'
+                    ) as tmp_file:
                         tmp_file.write(uploaded_file.getbuffer())
                         temp_files.append(tmp_file.name)
                         original_names.append(uploaded_file.name)
@@ -215,9 +227,13 @@ def main():
                         html_gen = HierarchicalHTMLGenerator()
                         html_path = html_gen.generate_report(hierarchical_data, None, project_info)
                         
-                        # Read the generated HTML
-                        with open(html_path, 'r', encoding='utf-8') as f:
-                            html_content = f.read()
+                        # Read the generated HTML with explicit UTF-8 encoding
+                        try:
+                            with open(html_path, 'r', encoding='utf-8', errors='replace') as f:
+                                html_content = f.read()
+                        except Exception as e:
+                            st.error(f"Fel vid läsning av HTML-fil: {str(e)}")
+                            html_content = ""
                         
                         # Store HTML content in session state
                         st.session_state['html_content'] = html_content

@@ -20,14 +20,25 @@ class HierarchicalHTMLGenerator:
         
         # If no output path specified, create a temporary file
         if output_path is None:
-            temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8')
+            temp_file = tempfile.NamedTemporaryFile(
+                mode='w', 
+                suffix='.html', 
+                delete=False, 
+                encoding='utf-8',
+                prefix='tracer_report_',
+                errors='replace'
+            )
             output_path = temp_file.name
             temp_file.write(html_content)
             temp_file.close()
         else:
-            # Write to specified path
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(html_content)
+            # Write to specified path with explicit UTF-8 encoding
+            try:
+                with open(output_path, 'w', encoding='utf-8', errors='replace') as f:
+                    f.write(html_content)
+            except Exception as e:
+                print(f"Error writing HTML file: {e}")
+                raise
         
         return output_path
     
@@ -59,11 +70,21 @@ class HierarchicalHTMLGenerator:
         html = f"""<!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <meta name="description" content="Spårbarhetsrapport genererad från Excel-filer">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="robots" content="noindex, nofollow">
     <title>Spårbarhetsrapport{' - ' + project_number if project_number else ''}</title>
     <style>
+        /* Security and performance optimizations */
+        * {{
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }}
+        
         {dynamic_styles}
         @media print {{
             @page {{

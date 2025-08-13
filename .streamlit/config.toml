@@ -1,0 +1,38 @@
+# Streamlit Configuration for tracer.streamlit.app
+# This file configures server settings for better Windows compatibility
+
+[server]
+# Server settings
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = true
+maxUploadSize = 200
+enableWebsocketCompression = true
+
+[browser]
+# Browser settings
+gatherUsageStats = false
+serverPort = 8501
+
+[theme]
+# Professional theme
+primaryColor = "#3b82f6"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#1f2937"
+font = "sans serif"
+
+[client]
+# Client settings for better performance
+showErrorDetails = true
+toolbarMode = "minimal"
+
+[runner]
+# Magic commands
+magicEnabled = false
+fastReruns = true
+
+[logger]
+# Logging level
+level = "warning"

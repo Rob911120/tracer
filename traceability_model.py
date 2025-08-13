@@ -1,8 +1,21 @@
+# -*- coding: utf-8 -*-
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Set
 from datetime import datetime
 import pandas as pd
 from pathlib import Path
+import sys
+
+# Ensure UTF-8 encoding for Windows compatibility
+if sys.platform == 'win32':
+    import locale
+    try:
+        locale.setlocale(locale.LC_ALL, 'sv_SE.UTF-8')
+    except locale.Error:
+        try:
+            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')  
+        except locale.Error:
+            pass  # Use system default
 
 
 @dataclass

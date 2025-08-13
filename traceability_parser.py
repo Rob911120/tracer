@@ -1,8 +1,21 @@
+# -*- coding: utf-8 -*-
 import pandas as pd
 from pathlib import Path
 from typing import List, Optional
 import numpy as np
+import sys
 from traceability_model import TraceabilityItem, TraceabilityDatabase
+
+# Ensure UTF-8 encoding for Windows compatibility
+if sys.platform == 'win32':
+    import locale
+    try:
+        locale.setlocale(locale.LC_ALL, 'sv_SE.UTF-8')
+    except locale.Error:
+        try:
+            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+        except locale.Error:
+            pass  # Use system default
 
 
 class TraceabilityParser:

@@ -508,7 +508,18 @@ class HierarchicalHTMLGenerator:
         }}
         
         .indent-{level} {{
-            padding-left: {10 + (level * 20)}px !important;
+            margin-left: {level * 20}px;
+            padding-left: 10px;
+            text-indent: {level * 15}px;
+            -webkit-text-indent: {level * 15}px;
+            -moz-text-indent: {level * 15}px;
+        }}
+        
+        .indent-{level}::before {{
+            content: "{' ' * (level * 2)}";
+            white-space: pre;
+            font-family: monospace;
+            display: inline;
         }}
         
         @media print {{
@@ -521,7 +532,15 @@ class HierarchicalHTMLGenerator:
             }}
             
             .indent-{level} {{
-                padding-left: {10 + (level * 20)}px !important;
+                margin-left: {level * 20}px !important;
+                padding-left: 10px !important;
+                text-indent: {level * 15}px !important;
+            }}
+            
+            .indent-{level}::before {{
+                content: "{' ' * (level * 2)}" !important;
+                white-space: pre !important;
+                font-family: monospace !important;
             }}
         }}""")
         
@@ -557,8 +576,10 @@ class HierarchicalHTMLGenerator:
                 </tr>"""
                 rows.append(separator_row)
             
-            # Create cell with indented styling based on level
-            artikel_cell = f'<span class="indent-{level}">{artikel}</span>'
+            # Create cell with multiple indentation methods for cross-browser compatibility  
+            indent_spaces = "&nbsp;" * (level * 4)  # Non-breaking spaces
+            indent_style = f"margin-left: {level * 20}px; padding-left: 10px;"
+            artikel_cell = f'<span class="indent-{level}" style="{indent_style}">{indent_spaces}{artikel}</span>'
             
             row = f"""
                 <tr class="level-{level}">

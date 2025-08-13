@@ -61,6 +61,7 @@ class HierarchicalHTMLGenerator:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Spårbarhetsrapport genererad från Excel-filer">
     <title>Spårbarhetsrapport{' - ' + project_number if project_number else ''}</title>
     <style>
         {dynamic_styles}
@@ -373,8 +374,8 @@ class HierarchicalHTMLGenerator:
         </div>
         
         <div class="actions no-print">
-            <button class="btn btn-primary" onclick="window.print()">Skriv ut / Spara som PDF</button>
-            <button class="btn" onclick="window.close()">Stäng</button>
+            <button class="btn btn-primary" onclick="window.print()" title="Skriv ut eller spara som PDF" aria-label="Skriv ut eller spara som PDF">Skriv ut / Spara som PDF</button>
+            <button class="btn" onclick="window.close()" title="Stäng fönstret" aria-label="Stäng fönstret">Stäng</button>
         </div>
         
         <table>

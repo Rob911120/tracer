@@ -80,25 +80,24 @@ class HierarchicalHTMLGenerator:
     <style>
         /* Cross-browser compatibility and performance optimizations */
         html {{
+            text-size-adjust: 100%;
             -webkit-text-size-adjust: 100%;
             -ms-text-size-adjust: 100%;
-            text-size-adjust: 100%;
         }}
         
         * {{
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
+            box-sizing: border-box;
             -webkit-box-sizing: border-box;
             -moz-box-sizing: border-box;
-            box-sizing: border-box;
         }}
         
         /* Fix for min-height stretch compatibility */
         .container {{
-            min-height: -webkit-fill-available;
-            min-height: stretch;
             min-height: 100vh;
+            min-height: -webkit-fill-available;
         }}
         
         {dynamic_styles}
@@ -508,16 +507,19 @@ class HierarchicalHTMLGenerator:
         }}
         
         .indent-{level} {{
-            display: block;
+            display: inline-block;
             margin-left: {level * 25}px !important;
             text-indent: 0 !important;
             position: relative;
+            width: calc(100% - {level * 25}px);
+            vertical-align: top;
         }}
         
         td .indent-{level} {{
             display: inline-block !important;
             margin-left: {level * 25}px !important;
             width: calc(100% - {level * 25}px) !important;
+            vertical-align: top !important;
         }}
         
         @media print {{
@@ -532,12 +534,15 @@ class HierarchicalHTMLGenerator:
             .indent-{level} {{
                 margin-left: {level * 25}px !important;
                 display: inline-block !important;
+                vertical-align: top !important;
+                width: calc(100% - {level * 25}px) !important;
             }}
             
             td .indent-{level} {{
                 margin-left: {level * 25}px !important;
                 display: inline-block !important;
                 width: calc(100% - {level * 25}px) !important;
+                vertical-align: top !important;
             }}
         }}""")
         
@@ -573,14 +578,14 @@ class HierarchicalHTMLGenerator:
                 </tr>"""
                 rows.append(separator_row)
             
-            # Create simple but robust indentation that works in all browsers
+            # Create Chrome-optimized indentation that works robustly across browsers
             if level > 0:
-                # Use combination of margin and non-breaking spaces for maximum compatibility
+                # Chrome requires explicit inline-block with padding for consistent rendering
                 indent_margin = level * 25
-                indent_spaces = "&nbsp;" * (level * 3)  # Visual backup
-                artikel_cell = f'<div style="margin-left: {indent_margin}px; display: inline-block; width: calc(100% - {indent_margin}px);" class="indent-{level}">{indent_spaces}{artikel}</div>'
+                indent_spaces = "&nbsp;" * (level * 2)  # Visual backup for Chrome
+                artikel_cell = f'<div style="margin-left: {indent_margin}px; display: inline-block; width: calc(100% - {indent_margin}px); vertical-align: top; box-sizing: border-box; position: relative;" class="indent-{level}">{indent_spaces}{artikel}</div>'
             else:
-                artikel_cell = f'<span class="indent-{level}">{artikel}</span>'
+                artikel_cell = f'<span style="display: inline-block; width: 100%;" class="indent-{level}">{artikel}</span>'
             
             row = f"""
                 <tr class="level-{level}">

@@ -508,18 +508,16 @@ class HierarchicalHTMLGenerator:
         }}
         
         .indent-{level} {{
-            margin-left: {level * 20}px;
-            padding-left: 10px;
-            text-indent: {level * 15}px;
-            -webkit-text-indent: {level * 15}px;
-            -moz-text-indent: {level * 15}px;
+            display: block;
+            margin-left: {level * 25}px !important;
+            text-indent: 0 !important;
+            position: relative;
         }}
         
-        .indent-{level}::before {{
-            content: "{' ' * (level * 2)}";
-            white-space: pre;
-            font-family: monospace;
-            display: inline;
+        td .indent-{level} {{
+            display: inline-block !important;
+            margin-left: {level * 25}px !important;
+            width: calc(100% - {level * 25}px) !important;
         }}
         
         @media print {{
@@ -532,15 +530,14 @@ class HierarchicalHTMLGenerator:
             }}
             
             .indent-{level} {{
-                margin-left: {level * 20}px !important;
-                padding-left: 10px !important;
-                text-indent: {level * 15}px !important;
+                margin-left: {level * 25}px !important;
+                display: inline-block !important;
             }}
             
-            .indent-{level}::before {{
-                content: "{' ' * (level * 2)}" !important;
-                white-space: pre !important;
-                font-family: monospace !important;
+            td .indent-{level} {{
+                margin-left: {level * 25}px !important;
+                display: inline-block !important;
+                width: calc(100% - {level * 25}px) !important;
             }}
         }}""")
         
@@ -576,10 +573,14 @@ class HierarchicalHTMLGenerator:
                 </tr>"""
                 rows.append(separator_row)
             
-            # Create cell with multiple indentation methods for cross-browser compatibility  
-            indent_spaces = "&nbsp;" * (level * 4)  # Non-breaking spaces
-            indent_style = f"margin-left: {level * 20}px; padding-left: 10px;"
-            artikel_cell = f'<span class="indent-{level}" style="{indent_style}">{indent_spaces}{artikel}</span>'
+            # Create simple but robust indentation that works in all browsers
+            if level > 0:
+                # Use combination of margin and non-breaking spaces for maximum compatibility
+                indent_margin = level * 25
+                indent_spaces = "&nbsp;" * (level * 3)  # Visual backup
+                artikel_cell = f'<div style="margin-left: {indent_margin}px; display: inline-block; width: calc(100% - {indent_margin}px);" class="indent-{level}">{indent_spaces}{artikel}</div>'
+            else:
+                artikel_cell = f'<span class="indent-{level}">{artikel}</span>'
             
             row = f"""
                 <tr class="level-{level}">

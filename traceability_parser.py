@@ -22,12 +22,11 @@ class TraceabilityParser:
     def __init__(self):
         self.database = TraceabilityDatabase()
     
-    def parse_file(self, file_path: Path, original_name: str = None) -> List[TraceabilityItem]:
+    def parse_file(self, file_path: Path) -> List[TraceabilityItem]:
         if file_path.suffix.lower() not in ['.xlsx', '.xls']:
             raise ValueError(f"Unsupported file type: {file_path.suffix}")
         
-        # Use original name if provided, otherwise use file path name
-        file_name = (original_name or file_path.name).lower()
+        file_name = file_path.name.lower()
         
         if 'sök i spårbarhet' in file_name:
             return self._parse_search_file(file_path)

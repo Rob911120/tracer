@@ -176,8 +176,24 @@ def main():
                 loaded_files = []
                 for i, temp_path in enumerate(temp_files):
                     try:
-                        parsed_items = parser.parse_file(Path(temp_path), original_names[i])
+                        # Use original filename for detection, but parse the temp file
+                        temp_path_obj = Path(temp_path)
+                        temp_path_obj_with_name = temp_path_obj.with_name(original_names[i])
+                        
+                        # Create a temporary file with the original name for proper parsing
+                        import shutil
+                        proper_temp_path = str(temp_path_obj.parent / original_names[i])
+                        shutil.copy2(temp_path, proper_temp_path)
+                        
+                        parsed_items = parser.parse_file(Path(proper_temp_path))
                         loaded_files.append(temp_path)
+                        
+                        # Clean up the renamed temp file
+                        try:
+                            os.unlink(proper_temp_path)
+                        except:
+                            pass
+                            
                     except Exception as e:
                         st.error(f"Fel vid parsning av {original_names[i]}: {str(e)}")
                 

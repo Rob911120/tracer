@@ -14,7 +14,7 @@ En webbapplikation för att generera spårbarhetsrapporter från Excel-filer. Ap
 
 ## Live Demo
 
-🚀 **[Prova appen live här!](https://sparbarhet-rapport.streamlit.app)** *(länk kommer när appen är deployad)*
+🚀 **[Prova appen live här!](https://tracer.streamlit.app)**
 
 ## Lokal installation
 

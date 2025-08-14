@@ -9,6 +9,11 @@ from datetime import datetime
 from traceability_parser import TraceabilityParser
 from traceability_model import TraceabilityDatabase
 from html_generator import HierarchicalHTMLGenerator
+try:
+    from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, JsCode
+    HAS_AGGRID = True
+except ImportError:
+    HAS_AGGRID = False
 
 # Ensure UTF-8 encoding
 if sys.platform == 'win32':
@@ -66,6 +71,47 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
+def create_tree_data_for_aggrid(database):
+    """Create tree-structured data for AgGrid display"""
+    if not database.all_items_in_order:
+        return pd.DataFrame()
+    
+    rows = []
+    parent_stack = []  # Track parents at each level
+    
+    # Build hierarchical structure preserving Excel order
+    for item in database.all_items_in_order:
+        article = database.articles.get(item.artikelnummer)
+        batch_numbers = list(article.get_unique_batch_numbers()) if article else []
+        charge_numbers = list(article.get_unique_charge_numbers()) if article else []
+        
+        # Build hierarchical path
+        # Trim parent stack to current level
+        parent_stack = parent_stack[:item.level]
+        
+        # Add all parents up to current level, then add current item
+        path = parent_stack + [item.artikelnummer]
+        
+        # Update parent stack for next iteration
+        if item.level < len(parent_stack):
+            parent_stack[item.level] = item.artikelnummer
+        else:
+            parent_stack.append(item.artikelnummer)
+        
+        row = {
+            'artikel': item.artikelnummer,
+            'artikeltyp': item.artikeltyp or '',
+            'benämning': item.artikelbenaming or '',
+            'kvantitet': str(item.kvantitet) if item.kvantitet else '',
+            'batchnummer': ', '.join(batch_numbers),
+            'chargenummer': ', '.join(charge_numbers),
+            'level': item.level,
+            'orgHierarchy': path
+        }
+        rows.append(row)
+    
+    return pd.DataFrame(rows)
 
 def create_hierarchical_export_data(database):
     """Create hierarchical data for HTML export that preserves original Excel order"""
@@ -221,6 +267,63 @@ def main():
                     • Laddade filer: {len(uploaded_files)}
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # Display hierarchical data with AgGrid if available
+                if HAS_AGGRID and database.all_items_in_order:
+                    st.markdown("### 📊 Hierarkisk datavisning")
+                    
+                    # Create tree data for AgGrid
+                    df_tree = create_tree_data_for_aggrid(database)
+                    
+                    if not df_tree.empty:
+                        # Configure grid
+                        gb = GridOptionsBuilder.from_dataframe(df_tree)
+                        
+                        # Enable tree data
+                        gb.configure_grid_options(
+                            treeData=True,
+                            animateRows=True,
+                            groupDefaultExpanded=1,
+                            getDataPath=JsCode("""
+                                function(data) {
+                                    return data.orgHierarchy;
+                                }
+                            """)
+                        )
+                        
+                        # Configure columns
+                        gb.configure_column("artikel", headerName="Artikel/Operation", 
+                                          cellRenderer='agGroupCellRenderer',
+                                          width=300, pinned='left')
+                        gb.configure_column("artikeltyp", headerName="Köpt/Tillverkad", width=130)
+                        gb.configure_column("benämning", headerName="Benämning", width=350)
+                        gb.configure_column("kvantitet", headerName="Kvantitet", width=100)
+                        gb.configure_column("batchnummer", headerName="Batchnummer", width=150)
+                        gb.configure_column("chargenummer", headerName="Chargenummer", width=150)
+                        gb.configure_column("orgHierarchy", hide=True)
+                        gb.configure_column("level", hide=True)
+                        
+                        # Grid options
+                        gb.configure_grid_options(
+                            domLayout='normal',
+                            enableCellTextSelection=True,
+                            rowHeight=35,
+                            headerHeight=40
+                        )
+                        
+                        grid_options = gb.build()
+                        
+                        # Display grid
+                        AgGrid(
+                            df_tree,
+                            gridOptions=grid_options,
+                            height=500,
+                            update_mode=GridUpdateMode.NO_UPDATE,
+                            fit_columns_on_grid_load=False,
+                            theme='streamlit',
+                            allow_unsafe_jscode=True,
+                            key='hierarchical_grid'
+                        )
                 
                 # Generate HTML report
                 if st.button("🔍 Generera spårbarhetsrapport", type="primary", use_container_width=True):
